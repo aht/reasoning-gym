@@ -13,9 +13,8 @@ class CodexAgent:
     Uses the same prompt format as other models in evoeval.
     """
     
-    def __init__(self, name: str, model_name: str = "gpt-4o-mini", **kwargs):
+    def __init__(self, model_name: str = "gpt-5.1-codex-mini", **kwargs):
         self.model_name = model_name
-        self.conversational = True
         
         # Set up environment
         self.env = {
@@ -41,6 +40,7 @@ class CodexAgent:
             "--model", self.model_name,
             "--skip-git-repo-check"
         ]
+        print(" ".join(cmd))
         
         # Run the command in the working directory
         result = subprocess.run(
@@ -56,7 +56,22 @@ class CodexAgent:
         
         return result.stdout
     
-    def answer(self, prompt: str, do_sample: bool = True, num_samples: int = 200) -> List[str]:
+    def _extract_generated_files(self, work_dir: str) -> str:
+        """Extract the generated Python files from the working directory."""
+        file_path = os.path.join(work_dir, "answer.txt")
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                out = f.read()
+                print(out)
+                return out
+        except:
+            print(f"Error generating code with Codex: {e}")
+            traceback.print_exc()
+            # Return empty strings for all samples on error
+            return ""            
+
+    def answer(self, prompt: str) -> List[str]:
         """Generate code using Codex CLI."""
         work_dir = None
         
@@ -67,42 +82,26 @@ class CodexAgent:
             # Create instruction with prompt
             instruction = dedent("""\
             Given a problem, your task is to answer the question by thinking step-by-step in a clear and specific manner.
-            Once you have thought about the reasoning process, provide the answer in the following format:
-            <answer>answer here</answer>
+            Once you have thought about the reasoning process, provide the answer in the file "answer.txt" in the following format:
+<answer>answer here</answer>
             Do not explain your reasoning inside the answer tags, provide only the final answer. When an example is provided, you should strictly follow the format of the output/answer in that example.
 
-
-            <question>
             {prompt}
-            </question>
             """)
-            
-            # Add instruction for multiple solutions if needed
-            if num_samples > 1:
-                output_instruction = f"Generate {num_samples} different solutions and save them as " + \
-                              f"0.py, 1.py, 2.py ...\n\n"
-            else:
-                output_instruction = "Save your solution as 0.py.\n\n"
-            
-            full_instruction = instruction.format(prompt=prompt.strip(), output_instruction=output_instruction)
+                        
+            full_instruction = instruction.format(prompt=prompt.strip())
             
             # Run codex command in working directory
             self._run_codex_command(full_instruction, work_dir)
             
             # Extract all generated files
-            outputs = self._extract_generated_files(work_dir, num_samples)
-            
-            # If we got fewer outputs than expected, pad with empty strings
-            while len(outputs) < num_samples:
-                outputs.append("")
-            
-            return outputs
+            return self._extract_generated_files(work_dir)
             
         except Exception as e:
             print(f"Error generating code with Codex: {e}")
             traceback.print_exc()
             # Return empty strings for all samples on error
-            return [""] * num_samples
+            return ""
             
         finally:
             # Clean up temporary files and directories

@@ -42,6 +42,7 @@ from tqdm.asyncio import tqdm_asyncio
 import reasoning_gym
 from reasoning_gym.utils import extract_answer
 
+from codex import CodexAgent
 
 class CheckpointManager:
     """Manages checkpoints for resumable evaluation."""
@@ -198,10 +199,13 @@ class AsyncModelEvaluator:
             logging.getLogger("httpx").setLevel(logging.WARNING)
 
         # Set up API client
-        self.client = AsyncOpenAI(base_url=self.base_url, api_key=api_key, timeout=self.timeout)
+        # self.client = AsyncOpenAI(base_url=self.base_url, api_key=api_key, timeout=self.timeout)
 
         # Concurrency control
-        self.semaphore = asyncio.Semaphore(config.max_concurrent)
+        # self.semaphore = asyncio.Semaphore(config.max_concurrent)
+        self.semaphore = asyncio.Semaphore(1)
+
+        self.agent = CodexAgent()
 
         # Metadata
         self.git_hash = get_git_hash()
@@ -306,30 +310,30 @@ class AsyncModelEvaluator:
         for attempt in range(max_retries):
             try:
                 async with self.semaphore:
-                    # Prepare API call parameters
-                    params = {
-                        "model": self.config.model,
-                        "messages": [
-                            {"role": self.config.system_role, "content": self.config.get_system_prompt()},
-                            {"role": "user", "content": prompt},
-                        ],
-                    }
-                    print(params)
+                    # # Prepare API call parameters
+                    # params = {
+                    #     "model": self.config.model,
+                    #     "messages": [
+                    #         {"role": self.config.system_role, "content": self.config.get_system_prompt()},
+                    #         {"role": "user", "content": prompt},
+                    #     ],
+                    # }
 
-                    # Add sampling parameters if specified
-                    if self.config.max_tokens is not None:
-                        params["max_tokens"] = self.config.max_tokens
-                    if self.config.temperature is not None:
-                        params["temperature"] = self.config.temperature
-                    if self.config.top_p is not None:
-                        params["top_p"] = self.config.top_p
+                    # # Add sampling parameters if specified
+                    # if self.config.max_tokens is not None:
+                    #     params["max_tokens"] = self.config.max_tokens
+                    # if self.config.temperature is not None:
+                    #     params["temperature"] = self.config.temperature
+                    # if self.config.top_p is not None:
+                    #     params["top_p"] = self.config.top_p
 
-                    # Add provider configuration if specified
-                    if self.config.provider:
-                        params["extra_body"] = {"provider": {"order": [self.config.provider], "allow_fallbacks": False}}
+                    # # Add provider configuration if specified
+                    # if self.config.provider:
+                    #     params["extra_body"] = {"provider": {"order": [self.config.provider], "allow_fallbacks": False}}
 
-                    completion = await self.client.chat.completions.create(**params)
-                    response = completion.choices[0].message.content
+                    # completion = self.client.chat.completions.create(**params)
+
+                    response = self.agent.answer(prompt)
 
                     if self.verbose:
                         self.logger.info(f"Response: {response}")
