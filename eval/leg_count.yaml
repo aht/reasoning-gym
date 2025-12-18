@@ -1,0 +1,11 @@
+model: "anthropic/claude-haiku-4.5"
+provider: "Anthropic"
+output_dir: "results"
+max_concurrent: 5
+default_size: 2
+default_seed: 45
+
+categories:
+  - category: "algorithmic"
+    datasets:
+      - dataset: "leg_counting"

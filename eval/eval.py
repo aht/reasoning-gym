@@ -314,6 +314,7 @@ class AsyncModelEvaluator:
                             {"role": "user", "content": prompt},
                         ],
                     }
+                    print(params)
 
                     # Add sampling parameters if specified
                     if self.config.max_tokens is not None:

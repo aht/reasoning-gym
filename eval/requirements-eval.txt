@@ -2,3 +2,4 @@ openai>=1.64.0
 PyYAML>=6.0
 tqdm>=4.66.0
 matplotlib>=3.10.0
+terminal-bench==0.2.18
