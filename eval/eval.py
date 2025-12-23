@@ -202,8 +202,8 @@ class AsyncModelEvaluator:
         # self.client = AsyncOpenAI(base_url=self.base_url, api_key=api_key, timeout=self.timeout)
 
         # Concurrency control
-        # self.semaphore = asyncio.Semaphore(config.max_concurrent)
-        self.semaphore = asyncio.Semaphore(1)
+        self.semaphore = asyncio.Semaphore(config.max_concurrent)
+        # self.semaphore = asyncio.Semaphore(1)
 
         self.agent = CodexAgent()
 

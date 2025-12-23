@@ -40,7 +40,7 @@ class CodexAgent:
             "--model", self.model_name,
             "--skip-git-repo-check"
         ]
-        print(" ".join(cmd))
+        # print(" ".join(cmd))
         
         # Run the command in the working directory
         result = subprocess.run(
@@ -63,7 +63,7 @@ class CodexAgent:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 out = f.read()
-                print(out)
+                # print(out)
                 return out
         except:
             print(f"Error generating code with Codex: {e}")
