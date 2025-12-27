@@ -9,3 +9,4 @@ categories:
   - category: "algorithmic"
     datasets:
       - dataset: "leg_counting"
+      - dataset: "word_ladder"

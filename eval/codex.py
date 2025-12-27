@@ -3,10 +3,14 @@ import shlex
 import subprocess
 import tempfile
 import traceback
+import logging
 from textwrap import dedent, indent
 from typing import List
 
-SUBPROCESS_TIMEOUT = 600
+SUBPROCESS_TIMEOUT = 120
+
+logger = logging.getLogger("AsyncModelEvaluator")
+
 
 class CodexAgent:
     """
@@ -14,8 +18,9 @@ class CodexAgent:
     Uses the same prompt format as other models in evoeval.
     """
     
-    def __init__(self, model_name: str = "gpt-5.1-codex-mini", **kwargs):
+    def __init__(self, model_name: str = "gpt-5.1-codex-mini", verbose: bool = False, **kwargs):
         self.model_name = model_name
+        self.verbose = verbose
         
         # Set up environment
         self.env = {
@@ -69,9 +74,11 @@ class CodexAgent:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 out = f.read()
-                return out
+            if self.verbose:
+                logger.info(f"Output from Codex: {out}")
+            return out
         except Exception as e:
-            print(f"Error generating code with Codex: {e}")
+            logger.error(f"Error extracting generated files from Codex: {e}")
             traceback.print_exc()
             # Return empty strings for all samples on error
             return ""            
@@ -83,6 +90,8 @@ class CodexAgent:
         try:
             # Create temporary working directory
             work_dir = tempfile.mkdtemp()
+            if self.verbose:
+                logger.info(f"Running Codex instance in Working directory: {work_dir}")
             
             # Create instruction with prompt
             instruction = dedent("""\

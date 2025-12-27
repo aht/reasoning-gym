@@ -205,7 +205,7 @@ class AsyncModelEvaluator:
         self.semaphore = asyncio.Semaphore(config.max_concurrent)
         # self.semaphore = asyncio.Semaphore(1)
 
-        self.agent = CodexAgent()
+        self.agent = CodexAgent(timeout=timeout, verbose=verbose)
 
         # Metadata
         self.git_hash = get_git_hash()
@@ -575,6 +575,7 @@ class AsyncModelEvaluator:
             results = await tqdm_asyncio.gather(*tasks, desc=f"Processing {dataset_name}", leave=True)
 
             # Calculate metrics
+            total_score = sum(c["score"] for r in results for c in r["completions"])
             total_best_score = sum(r["best_score"] for r in results)
             total_mean_score = sum(r["mean_score"] for r in results)
             average_best_score = total_best_score / len(results) if results else 0
@@ -585,6 +586,7 @@ class AsyncModelEvaluator:
                 "category": category_name,
                 "average_best_score": average_best_score,
                 "average_mean_score": average_mean_score,
+                "total_score": total_score,
                 "total_examples": len(results),
                 "config": {"size": dataset_config.size, "seed": dataset_config.seed, **dataset_config.params},
                 "system_prompt": self.config.get_system_prompt(),
@@ -605,6 +607,7 @@ class AsyncModelEvaluator:
                 "category": category_name,
                 "average_best_score": 0.0,
                 "average_mean_score": 0.0,
+                "total_score": 0.0,
                 "total_examples": 0,
                 "config": {"size": dataset_config.size, "seed": dataset_config.seed, **dataset_config.params},
                 "system_prompt": self.config.get_system_prompt(),
@@ -708,7 +711,7 @@ class AsyncModelEvaluator:
             "dataset_mean_scores": {},
             "global_average_score": 0.0,
         }
-        weighted_mean_total = 0.0
+        summary["total_score"] = 0.0
 
         # Iterate through categories and datasets in the original order from config
         for category_config in self.config.categories:
@@ -726,7 +729,7 @@ class AsyncModelEvaluator:
                                 summary["dataset_mean_scores"][dataset_name] = dataset["average_mean_score"]
                                 summary["total_datasets"] += 1
                                 summary["total_examples"] += dataset["total_examples"]
-                                weighted_mean_total += dataset["average_mean_score"] * dataset["total_examples"]
+                                summary["total_score"] += dataset["total_score"]
                                 dataset_found = True
                                 break
 
@@ -737,7 +740,9 @@ class AsyncModelEvaluator:
                     summary["total_datasets"] += 1
 
         if summary["total_examples"] > 0:
-            summary["global_average_score"] = weighted_mean_total / summary["total_examples"]
+            summary["global_average_score"] = summary["total_score"] / summary["total_examples"]
+        else:
+            summary["global_average_score"] = 0.0
 
         return summary
 
@@ -829,6 +834,7 @@ class AsyncModelEvaluator:
         print()
         print(f"Total datasets: {summary['total_datasets']}")
         print(f"Total examples: {summary['total_examples']}")
+        print(f"Total score: {summary['total_score']:.1%}")
 
 
 async def main_async():
