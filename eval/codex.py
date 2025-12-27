@@ -6,6 +6,7 @@ import traceback
 from textwrap import dedent, indent
 from typing import List
 
+SUBPROCESS_TIMEOUT = 600
 
 class CodexAgent:
     """
@@ -23,7 +24,12 @@ class CodexAgent:
         
         # Check if codex command is available
         try:
-            subprocess.run(["codex", "--version"], capture_output=True, check=True)
+            subprocess.run(
+                ["codex", "--version"],
+                capture_output=True,
+                check=True,
+                timeout=SUBPROCESS_TIMEOUT,
+            )
         except (subprocess.CalledProcessError, FileNotFoundError):
             raise RuntimeError(
                 "Codex CLI not found. Please ensure it's installed and available in PATH."
@@ -40,7 +46,6 @@ class CodexAgent:
             "--model", self.model_name,
             "--skip-git-repo-check"
         ]
-        # print(" ".join(cmd))
         
         # Run the command in the working directory
         result = subprocess.run(
@@ -48,7 +53,8 @@ class CodexAgent:
             capture_output=True,
             text=True,
             cwd=work_dir,
-            env={**os.environ, **self.env}
+            env={**os.environ, **self.env},
+            timeout=SUBPROCESS_TIMEOUT,
         )
         
         if result.returncode != 0:
@@ -63,7 +69,6 @@ class CodexAgent:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 out = f.read()
-                # print(out)
                 return out
         except:
             print(f"Error generating code with Codex: {e}")
