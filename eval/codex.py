@@ -70,7 +70,7 @@ class CodexAgent:
             with open(file_path, 'r', encoding='utf-8') as f:
                 out = f.read()
                 return out
-        except:
+        except Exception as e:
             print(f"Error generating code with Codex: {e}")
             traceback.print_exc()
             # Return empty strings for all samples on error

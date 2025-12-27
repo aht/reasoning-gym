@@ -706,7 +706,9 @@ class AsyncModelEvaluator:
             "total_examples": 0,
             "dataset_best_scores": {},
             "dataset_mean_scores": {},
+            "global_average_score": 0.0,
         }
+        weighted_mean_total = 0.0
 
         # Iterate through categories and datasets in the original order from config
         for category_config in self.config.categories:
@@ -724,6 +726,7 @@ class AsyncModelEvaluator:
                                 summary["dataset_mean_scores"][dataset_name] = dataset["average_mean_score"]
                                 summary["total_datasets"] += 1
                                 summary["total_examples"] += dataset["total_examples"]
+                                weighted_mean_total += dataset["average_mean_score"] * dataset["total_examples"]
                                 dataset_found = True
                                 break
 
@@ -732,6 +735,9 @@ class AsyncModelEvaluator:
                     summary["dataset_best_scores"][dataset_name] = 0.0
                     summary["dataset_mean_scores"][dataset_name] = 0.0
                     summary["total_datasets"] += 1
+
+        if summary["total_examples"] > 0:
+            summary["global_average_score"] = weighted_mean_total / summary["total_examples"]
 
         return summary
 
@@ -817,6 +823,8 @@ class AsyncModelEvaluator:
 
             # Use fixed-width formatting for better alignment
             print(f"  {dataset_name:<30} {best_score:>8.1%}    {mean_score:>8.1%}    {examples:>8}")
+
+        print(f"Global average score: {summary['global_average_score']:.1%}")
 
         print()
         print(f"Total datasets: {summary['total_datasets']}")
