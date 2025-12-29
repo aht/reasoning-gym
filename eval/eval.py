@@ -333,7 +333,7 @@ class AsyncModelEvaluator:
 
                     # completion = self.client.chat.completions.create(**params)
 
-                    response = self.agent.answer(prompt)
+                    response = await self.agent.answer(prompt)
 
                     if self.verbose:
                         self.logger.info(f"Response: {response}")
@@ -834,7 +834,7 @@ class AsyncModelEvaluator:
         print()
         print(f"Total datasets: {summary['total_datasets']}")
         print(f"Total examples: {summary['total_examples']}")
-        print(f"Total score: {summary['total_score']:.1}")
+        print(f"Total score: {summary['total_score']:.2f}")
 
 
 async def main_async():

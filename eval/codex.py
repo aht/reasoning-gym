@@ -1,11 +1,11 @@
+import asyncio
 import os
 import shlex
-import subprocess
+import shutil
 import tempfile
 import traceback
 import logging
 from textwrap import dedent, indent
-from typing import List
 
 SUBPROCESS_TIMEOUT = 120
 
@@ -27,20 +27,12 @@ class CodexAgent:
             "OPENAI_API_KEY": os.environ.get("OPENAI_API_KEY"),
         }
         
-        # Check if codex command is available
-        try:
-            subprocess.run(
-                ["codex", "--version"],
-                capture_output=True,
-                check=True,
-                timeout=SUBPROCESS_TIMEOUT,
-            )
-        except (subprocess.CalledProcessError, FileNotFoundError):
+        if shutil.which("codex") is None:
             raise RuntimeError(
                 "Codex CLI not found. Please ensure it's installed and available in PATH."
             )
     
-    def _run_codex_command(self, prompt: str, work_dir: str) -> str:
+    async def _run_codex_command(self, prompt: str, work_dir: str) -> str:
         """Run codex command with the prompt in a working directory."""
         escaped_prompt = shlex.quote(prompt)
         cmd = [
@@ -53,19 +45,27 @@ class CodexAgent:
         ]
         
         # Run the command in the working directory
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
             cwd=work_dir,
             env={**os.environ, **self.env},
-            timeout=SUBPROCESS_TIMEOUT,
         )
-        
-        if result.returncode != 0:
-            raise RuntimeError(f"Codex command failed: {result.stderr}")
-        
-        return result.stdout
+
+        try:
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(), timeout=SUBPROCESS_TIMEOUT
+            )
+        except asyncio.TimeoutError:
+            process.kill()
+            await process.wait()
+            raise RuntimeError("Codex command timed out")
+
+        if process.returncode != 0:
+            raise RuntimeError(f"Codex command failed: {stderr.decode(errors='replace')}")
+
+        return stdout.decode(errors="replace")
     
     def _extract_generated_files(self, work_dir: str) -> str:
         """Extract the generated Python files from the working directory."""
@@ -83,7 +83,7 @@ class CodexAgent:
             # Return empty strings for all samples on error
             return ""            
 
-    def answer(self, prompt: str) -> List[str]:
+    async def answer(self, prompt: str) -> str:
         """Generate code using Codex CLI."""
         work_dir = None
         
@@ -106,7 +106,7 @@ class CodexAgent:
             full_instruction = instruction.format(prompt=prompt.strip())
             
             # Run codex command in working directory
-            self._run_codex_command(full_instruction, work_dir)
+            await self._run_codex_command(full_instruction, work_dir)
             
             # Extract all generated files
             return self._extract_generated_files(work_dir)
