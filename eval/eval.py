@@ -204,6 +204,8 @@ class AsyncModelEvaluator:
         # Concurrency control
         self.semaphore = asyncio.Semaphore(config.max_concurrent)
         # self.semaphore = asyncio.Semaphore(1)
+        if self.debug:
+            self.logger.debug("Max concurrent requests: %s", config.max_concurrent)
 
         self.agent = CodexAgent(timeout=timeout, verbose=verbose)
 
@@ -302,13 +304,19 @@ class AsyncModelEvaluator:
         Raises:
             Exception: If all retries fail
         """
-        max_retries = 10
+        max_retries = 1
         base_delay = 1.0
         max_delay = 60.0
         backoff_factor = 2.0
 
         for attempt in range(max_retries):
             try:
+                if self.debug:
+                    self.logger.debug(
+                        "Semaphore before acquire: available=%s max=%s",
+                        getattr(self.semaphore, "_value", "unknown"),
+                        self.config.max_concurrent,
+                    )
                 async with self.semaphore:
                     # # Prepare API call parameters
                     # params = {
@@ -508,7 +516,7 @@ class AsyncModelEvaluator:
                     else (responses[0] if responses and len(responses) > 0 else None)
                 ),
                 "best_score": best_score if best_score > 0 else 0.0,
-                "mean_score": total_score / total_completions if total_completions > 0 else 0.0,
+                "mean_score": 0.0,
                 "error": str(e),
                 "completions": completion_results if "completion_results" in locals() else [],
             }
