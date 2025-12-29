@@ -834,7 +834,7 @@ class AsyncModelEvaluator:
         print()
         print(f"Total datasets: {summary['total_datasets']}")
         print(f"Total examples: {summary['total_examples']}")
-        print(f"Total score: {summary['total_score']:.1%}")
+        print(f"Total score: {summary['total_score']:.1}")
 
 
 async def main_async():
