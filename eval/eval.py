@@ -768,7 +768,7 @@ class AsyncModelEvaluator:
         summary_data = results["summary"].copy()
         summary_data["timestamp"] = self.start_time.isoformat()
         summary_data["git_hash"] = self.git_hash
-        summary_data["model"] = self.config.model
+        summary_data["model"] = self.agent.model_name
         summary_data["provider"] = self.config.provider
         summary_data["system_prompt"] = self.config.get_system_prompt()
         if self.config.system_prompt_id:
@@ -799,13 +799,8 @@ class AsyncModelEvaluator:
 
         print("\nEvaluation Summary:")
         print("------------------")
-        print(f"Model: {self.config.model}")
-        print(f"Provider: {self.config.provider}")
-        system_prompt = self.config.get_system_prompt()
-        print(f"System Prompt: {system_prompt[:50]}..." if len(system_prompt) > 50 else system_prompt)
-        print(f"Max Tokens: {self.config.max_tokens}")
-        print(f"Temperature: {self.config.temperature}")
-        print(f"Top-p: {self.config.top_p}")
+        print(f"Agent: Codex")
+        print(f"Model: {self.agent.model_name}")
         print(f"Completions per prompt: {self.config.completions_per_prompt}")
         print(f"Git Hash: {self.git_hash}")
         print(f"Duration: {results['metadata']['duration_seconds']:.2f} seconds")

@@ -110,13 +110,7 @@ class CodexAgent:
             
             # Extract all generated files
             return self._extract_generated_files(work_dir)
-            
-        except Exception as e:
-            print(f"Error generating code with Codex: {e}")
-            traceback.print_exc()
-            # Return empty strings for all samples on error
-            return ""
-            
+                        
         finally:
             # Clean up temporary files and directories
             if work_dir:
