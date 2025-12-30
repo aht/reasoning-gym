@@ -81,12 +81,6 @@ def main():
     args, eval_args = parser.parse_known_args()
 
     # Get API keys from environment
-    openrouter_api_key = os.environ.get("OPENROUTER_API_KEY")
-    if not openrouter_api_key:
-        print("Error: OPENROUTER_API_KEY environment variable is not set.", file=sys.stderr)
-        print("Please set it with: export OPENROUTER_API_KEY=your_key_here", file=sys.stderr)
-        return 1
-
     openai_api_key = os.environ.get("OPENAI_API_KEY")
     if not openai_api_key:
         print("Error: OPENAI_API_KEY environment variable is not set.", file=sys.stderr)
@@ -113,7 +107,6 @@ def main():
                 name=args.sandbox_name,
                 image=image,
                 env_vars={
-                    "OPENROUTER_API_KEY": openrouter_api_key,
                     "OPENAI_API_KEY": openai_api_key
                 }
             )
@@ -126,9 +119,6 @@ def main():
         eval_cmd_str = " ".join(eval_command)
 
         print(f"Executing: {eval_cmd_str}")
-
-        result = sandbox.process.exec("ls /workspace/reasoning-gym/eval/")
-        print(result.result)
 
         # Execute the evaluation script
         result = sandbox.process.exec(eval_cmd_str)
