@@ -81,6 +81,12 @@ def main():
     args, eval_args = parser.parse_known_args()
 
     # Get API keys from environment
+    openrouter_api_key = os.environ.get("OPENROUTER_API_KEY")
+    if not openrouter_api_key:
+        print("Error: OPENROUTER_API_KEY environment variable is not set.", file=sys.stderr)
+        print("Please set it with: export OPENROUTER_API_KEY=your_key_here", file=sys.stderr)
+        return 1
+
     openai_api_key = os.environ.get("OPENAI_API_KEY")
     if not openai_api_key:
         print("Error: OPENAI_API_KEY environment variable is not set.", file=sys.stderr)
@@ -107,6 +113,7 @@ def main():
                 name=args.sandbox_name,
                 image=image,
                 env_vars={
+                    "OPENROUTER_API_KEY": openrouter_api_key,
                     "OPENAI_API_KEY": openai_api_key
                 }
             )
@@ -139,6 +146,7 @@ def main():
             results_dir.mkdir(parents=True, exist_ok=True)
 
         print("\nDownloading evaluation results...")
+
         try:
             # Try to download the results directory from the sandbox
             files = sandbox.fs.find_files(path="/workspace/reasoning-gym/results", pattern="**/*")
