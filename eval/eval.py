@@ -171,7 +171,7 @@ class AsyncModelEvaluator:
         base_url: str = "https://openrouter.ai/api/v1",
         verbose: bool = False,
         debug: bool = False,
-        timeout: int = 600,
+        timeout: int = 120,
     ):
         """Initialize the evaluator with configuration.
 
@@ -304,8 +304,8 @@ class AsyncModelEvaluator:
         Raises:
             Exception: If all retries fail
         """
-        max_retries = 1
-        base_delay = 1.0
+        max_retries = 3
+        base_delay = 5.0
         max_delay = 60.0
         backoff_factor = 2.0
 
@@ -859,7 +859,7 @@ async def main_async():
     parser.add_argument("--verbose", action="store_true", help="Print detailed model responses")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument("--resume", help="Resume evaluation from the specified directory")
-    parser.add_argument("--timeout", type=int, default=600, help="Time in seconds for timeout of a single request")
+    parser.add_argument("--timeout", type=int, default=120, help="Time in seconds for timeout of a single request")
 
     args = parser.parse_args()
 
