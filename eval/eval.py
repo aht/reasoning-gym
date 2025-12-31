@@ -687,12 +687,8 @@ class AsyncModelEvaluator:
             "metadata": {
                 "timestamp": self.start_time.isoformat(),
                 "model": self.config.model,
-                "provider": self.config.provider,
                 "git_hash": self.git_hash,
                 "duration_seconds": (datetime.now() - self.start_time).total_seconds(),
-                "max_tokens": self.config.max_tokens,
-                "temperature": self.config.temperature,
-                "top_p": self.config.top_p,
                 "partial": False,  # Mark as complete
             },
             "categories": category_results,
