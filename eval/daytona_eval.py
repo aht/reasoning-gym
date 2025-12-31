@@ -122,11 +122,14 @@ def main():
         print("Running evaluation...")
 
         # setup codex auth.json
-        sandbox.process.exec(f"""cat > /root/.codex/auth.json <<EOF
-{
-  "OPENAI_API_KEY": "${openai_api_key}"
-}
-EOF""")
+        sandbox.process.exec(
+            f"echo '{{\"OPENAI_API_KEY\": \"{openai_api_key}\"}}' > /root/.codex/auth.json"
+        )
+
+        # setup harbor adapter git repo which contains the eval config file for parity
+        print("Setting up harbor adapter-reasoning-gym git repo...")
+        result = sandbox.process.exec(f"""git clone -b adapter-reasoning-gym https://github.com/aht/harbor.git /workspace/harbor""")
+        print(result.result)
 
         # Build the eval command with any additional arguments
         eval_command = ["python", "eval/eval.py"] + eval_args
