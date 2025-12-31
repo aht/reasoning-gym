@@ -121,6 +121,13 @@ def main():
             print(f"Sandbox created successfully: {sandbox.id}")
         print("Running evaluation...")
 
+        # setup codex auth.json
+        sandbox.process.exec(f"""cat > /root/.codex/auth.json <<EOF
+{
+  "OPENAI_API_KEY": "${openai_api_key}"
+}
+EOF""")
+
         # Build the eval command with any additional arguments
         eval_command = ["python", "eval/eval.py"] + eval_args
         eval_cmd_str = " ".join(eval_command)
