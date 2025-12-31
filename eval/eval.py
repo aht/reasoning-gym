@@ -468,7 +468,7 @@ class AsyncModelEvaluator:
                         {
                             "model_answer": "ERROR",
                             "full_model_response": response,
-                            "score": 0.0,
+                            "score": float("nan"),
                             "error": str(e),
                         }
                     )
@@ -515,8 +515,8 @@ class AsyncModelEvaluator:
                     if best_response is not None
                     else (responses[0] if responses and len(responses) > 0 else None)
                 ),
-                "best_score": best_score if best_score > 0 else 0.0,
-                "mean_score": 0.0,
+                "best_score": best_score if best_score > 0 else float("nan"),
+                "mean_score": float("nan"),
                 "error": str(e),
                 "completions": completion_results if "completion_results" in locals() else [],
             }
@@ -583,7 +583,9 @@ class AsyncModelEvaluator:
             results = await tqdm_asyncio.gather(*tasks, desc=f"Processing {dataset_name}", leave=True)
 
             # Calculate metrics
-            total_score = sum(c["score"] for r in results for c in r["completions"])
+            import math
+            total_errors = sum(1 for r in results if "error" in r)
+            total_score = sum(c["score"] for r in results for c in r["completions"] if not math.isnan(c["score"]))
             total_best_score = sum(r["best_score"] for r in results)
             total_mean_score = sum(r["mean_score"] for r in results)
             average_best_score = total_best_score / len(results) if results else 0
@@ -591,10 +593,12 @@ class AsyncModelEvaluator:
 
             dataset_results = {
                 "name": dataset_name,
+                "errors": total_errors,
                 "category": category_name,
                 "average_best_score": average_best_score,
                 "average_mean_score": average_mean_score,
                 "total_score": total_score,
+                "total_errors": total_errors,
                 "total_examples": len(results),
                 "config": {"size": dataset_config.size, "seed": dataset_config.seed, **dataset_config.params},
                 "system_prompt": self.config.get_system_prompt(),
@@ -617,6 +621,7 @@ class AsyncModelEvaluator:
                 "average_mean_score": 0.0,
                 "total_score": 0.0,
                 "total_examples": 0,
+                "total_errors": 0,
                 "config": {"size": dataset_config.size, "seed": dataset_config.seed, **dataset_config.params},
                 "system_prompt": self.config.get_system_prompt(),
                 "error": str(e),
@@ -716,6 +721,7 @@ class AsyncModelEvaluator:
             "global_average_score": 0.0,
         }
         summary["total_score"] = 0.0
+        summary["total_errors"] = 0
 
         # Iterate through categories and datasets in the original order from config
         for category_config in self.config.categories:
@@ -734,6 +740,7 @@ class AsyncModelEvaluator:
                                 summary["total_datasets"] += 1
                                 summary["total_examples"] += dataset["total_examples"]
                                 summary["total_score"] += dataset["total_score"]
+                                summary["total_errors"] += dataset["total_errors"]
                                 dataset_found = True
                                 break
 
@@ -811,8 +818,8 @@ class AsyncModelEvaluator:
         print()
 
         print("Dataset Scores (in configuration order):")
-        print("  Dataset Name                  Best Score    Mean Score    Examples")
-        print("  ------------------------------------------------------------------")
+        print("  Dataset Name                  Best Score    Mean Score    Examples    Errors")
+        print("  ----------------------------------------------------------------------------")
         for dataset_name in summary["dataset_best_scores"].keys():
             best_score = summary["dataset_best_scores"][dataset_name]
             mean_score = summary["dataset_mean_scores"][dataset_name]
@@ -823,10 +830,11 @@ class AsyncModelEvaluator:
                 for dataset in category["datasets"]:
                     if dataset["name"] == dataset_name:
                         examples = dataset["total_examples"]
+                        errors = dataset["total_errors"]
                         break
 
             # Use fixed-width formatting for better alignment
-            print(f"  {dataset_name:<30} {best_score:>8.1%}    {mean_score:>8.1%}    {examples:>8}")
+            print(f"  {dataset_name:<30} {best_score:>8.1%}    {mean_score:>8.1%}    {examples:>8}    {errors:>8}")
 
         print(f"Global average score: {summary['global_average_score']:.1%}")
 
@@ -834,6 +842,7 @@ class AsyncModelEvaluator:
         print(f"Total datasets: {summary['total_datasets']}")
         print(f"Total examples: {summary['total_examples']}")
         print(f"Total score: {summary['total_score']:.2f}")
+        print(f"Total errors: {summary['total_errors']}")
 
 
 async def main_async():
