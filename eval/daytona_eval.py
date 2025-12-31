@@ -123,9 +123,10 @@ def main():
             print(f"Sandbox created successfully: {sandbox.id}")
 
             # setup codex auth.json
-            sandbox.process.exec(
+            print(sandbox.process.exec("mkdir -p /root/.codex").result)
+            print(sandbox.process.exec(
                 f"echo '{{\"OPENAI_API_KEY\": \"{openai_api_key}\"}}' > /root/.codex/auth.json"
-            )
+            ).result)
 
             # setup harbor adapter git repo which contains the eval config file for parity
             print("Setting up harbor adapter-reasoning-gym git repo...")
@@ -162,7 +163,7 @@ def main():
 
         try:
             # Try to download the results directory from the sandbox
-            files = sandbox.fs.find_files(path="/workspace/reasoning-gym/results/")
+            files = sandbox.fs.find_files(path="/workspace/reasoning-gym/results/", pattern=".*")
             if files:
                 for file in files:
                     file_path = file.path if hasattr(file, 'path') else str(file)
