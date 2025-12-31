@@ -106,6 +106,8 @@ def main():
             sandbox = daytona.get(args.sandbox_name)
             print(f"Found existing sandbox: {sandbox.id}")
             print("Reusing existing sandbox...")
+            result = sandbox.process.exec("git pull")
+            print(result.result)
         except Exception:
             # Sandbox doesn't exist, create a new one
             print(f"Creating new sandbox: {args.sandbox_name}")
@@ -160,7 +162,7 @@ def main():
 
         try:
             # Try to download the results directory from the sandbox
-            files = sandbox.fs.find_files(path="/workspace/reasoning-gym/results", pattern="**/*")
+            files = sandbox.fs.find_files(path="/workspace/reasoning-gym/results/")
             if files:
                 for file in files:
                     file_path = file.path if hasattr(file, 'path') else str(file)
