@@ -139,7 +139,7 @@ def main():
         print(f"Executing: {eval_cmd_str}")
 
         # Execute the evaluation script
-        result = sandbox.process.exec(eval_cmd_str)
+        result = sandbox.process.exec(eval_cmd_str, timeout=3000)
 
         # Print output
         print("\n" + "="*80)
