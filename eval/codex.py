@@ -112,7 +112,10 @@ class CodexAgent:
 Given a problem in `question.txt` in the current working directory "{work_dir}", your task is to answer the question by thinking step-by-step in a clear and specific manner.
 Once you have thought about the reasoning process, provide the answer in the file "answer.txt" (which should also be put in in the current working directory).
 Do not explain your reasoning inside the answer tags, provide only the final answer. When an example is provided, you should strictly follow the format of the output/answer in that example.
-"""                        
+"""
+        if self.debug:
+            logger.info(f"Instruction: {instruction}")
+        
         try:
             # Run codex command in working directory
             await self._run_codex_command(instruction.strip(), work_dir)
@@ -122,7 +125,7 @@ Do not explain your reasoning inside the answer tags, provide only the final ans
                         
         finally:
             # Clean up temporary files and directories
-            if work_dir:
+            if not self.debug:
                 try:
                     import shutil
                     shutil.rmtree(work_dir)
