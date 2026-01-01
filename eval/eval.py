@@ -506,7 +506,7 @@ class AsyncModelEvaluator:
             return result
 
         except Exception as e:
-            self.logger.error(f"Error processing entry: {str(e)}")
+            self.logger.error(f"Error processing entry for dataset_name={dataset_name}, entry_index={entry_index}: {str(e)}")
             result = {
                 "question": entry["question"],
                 "expected_answer": str(entry["answer"]),
