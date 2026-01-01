@@ -91,28 +91,29 @@ class CodexAgent:
             return ""            
 
     async def answer(self, question: str) -> str:
-        """Generate code using Codex CLI."""
-        work_dir = None
+        """Generate code using Codex CLI."""    
+        # Create temporary working directory
+        work_dir = tempfile.mkdtemp()
+        if self.verbose:
+            logger.info(f"Running Codex instance in Working directory: {work_dir}")
         
         try:
-            # Create temporary working directory
-            work_dir = tempfile.mkdtemp()
-            if self.verbose:
-                logger.info(f"Running Codex instance in Working directory: {work_dir}")
-            
-
             # Write question to file
             file_path = os.path.join(work_dir, "question.txt")        
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(question)
             if self.verbose:
                 logger.info(f"Content of question.txt:\n{question}")
+        except Exception as e:
+            logger.error(f"Error writing question to file: {e}")
+            raise e
 
-            instruction = f"""\
+        instruction = f"""\
 Given a problem in `question.txt` in the current working directory "{work_dir}", your task is to answer the question by thinking step-by-step in a clear and specific manner.
 Once you have thought about the reasoning process, provide the answer in the file "answer.txt" (which should also be put in in the current working directory).
 Do not explain your reasoning inside the answer tags, provide only the final answer. When an example is provided, you should strictly follow the format of the output/answer in that example.
 """                        
+        try:
             # Run codex command in working directory
             await self._run_codex_command(instruction.strip(), work_dir)
             
