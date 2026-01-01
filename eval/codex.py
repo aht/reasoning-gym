@@ -80,14 +80,10 @@ class CodexAgent:
             return out
         except Exception as e:
             logger.error(f"Error extracting generated files from Codex: {e}")
-            process = await asyncio.create_subprocess_shell(
-                f"ls -la {work_dir}",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, _ = await process.communicate()
-            logger.info("Content of working directory:\n" + stdout.decode(errors='replace'))
-            # Return empty strings for all samples on error
+            logger.info("Content of working directory:\n")
+            for item in os.listdir(work_dir):                                                                                   
+                item_path = os.path.join(work_dir, item)                                                                        
+                logger.info(f"  - {item} ({'dir' if os.path.isdir(item_path) else 'file'})")                                    
             raise e
 
     async def answer(self, question: str) -> str:
@@ -110,7 +106,7 @@ class CodexAgent:
 
         instruction = f"""\
 Given a problem in `question.txt` in the current working directory "{work_dir}", your task is to answer the question by thinking step-by-step in a clear and specific manner.
-Once you have thought about the reasoning process, provide the answer in the file "answer.txt" (which should also be put in the same working directory "{workdir}").
+Once you have thought about the reasoning process, provide the answer in the file "answer.txt" (which should also be put in the same working directory "{work_dir}").
 Do not explain your reasoning inside the answer tags, provide only the final answer. When an example is provided, you should strictly follow the format of the output/answer in that example.
 """
         if self.verbose:
