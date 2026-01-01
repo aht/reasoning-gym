@@ -117,8 +117,7 @@ def main():
                 env_vars={
                     "OPENROUTER_API_KEY": openrouter_api_key,
                     "OPENAI_API_KEY": openai_api_key
-                },
-                auto_stop_interval=0
+                }
             )
             sandbox = daytona.create(params=params)
             print(f"Sandbox created successfully: {sandbox.id}")
