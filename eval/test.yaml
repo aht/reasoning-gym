@@ -8,5 +8,8 @@ default_seed: 45
 categories:
   - category: "algorithmic"
     datasets:
-      - dataset: "leg_counting"
-      - dataset: "word_ladder"
+      - dataset: "number_filtering"
+      - dataset: "number_sorting"
+  - category: "cognition"
+    datasets: 
+      - dataset: "figlet_font"

@@ -423,6 +423,8 @@ class AsyncModelEvaluator:
 
         try:
             # Get multiple model responses
+
+            # Create instruction with prompt
             responses = await self.get_model_response(entry["question"])
 
             # Count total completions for mean score calculation
