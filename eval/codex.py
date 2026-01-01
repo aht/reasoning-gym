@@ -68,7 +68,7 @@ class CodexAgent:
 
         return stdout.decode(errors="replace")
     
-    def _extract_generated_files(self, work_dir: str) -> str:
+    async def _extract_generated_files(self, work_dir: str) -> str:
         """Extract the generated Python files from the working directory."""
         file_path = os.path.join(work_dir, "answer.txt")
         
@@ -80,7 +80,13 @@ class CodexAgent:
             return out
         except Exception as e:
             logger.error(f"Error extracting generated files from Codex: {e}")
-            traceback.print_exc()
+            process = await asyncio.create_subprocess_shell(
+                f"ls -la {work_dir}",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, _ = await process.communicate()
+            logger.error(stdout.decode(errors='replace'))
             # Return empty strings for all samples on error
             return ""            
 
@@ -111,7 +117,7 @@ Do not explain your reasoning inside the answer tags, provide only the final ans
             await self._run_codex_command(instruction.strip(), work_dir)
             
             # Extract all generated files
-            return self._extract_generated_files(work_dir)
+            return await self._extract_generated_files(work_dir)
                         
         finally:
             # Clean up temporary files and directories
