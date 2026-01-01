@@ -94,6 +94,7 @@ class CodexAgent:
             if self.verbose:
                 logger.info(f"Running Codex instance in Working directory: {work_dir}")
             
+
             # Write question to file
             file_path = os.path.join(work_dir, "question.txt")        
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -102,8 +103,8 @@ class CodexAgent:
                 logger.info(f"Content of question.txt:\n{question}")
 
             instruction = f"""\
-Given a problem in `/workspace/question.txt`, your task is to answer the question by thinking step-by-step in a clear and specific manner.
-Once you have thought about the reasoning process, provide the answer in the file "/workspace/answer.txt".
+Given a problem in `question.txt` in the current working directory "{work_dir}", your task is to answer the question by thinking step-by-step in a clear and specific manner.
+Once you have thought about the reasoning process, provide the answer in the file "answer.txt" (which should also be put in in the current working directory).
 Do not explain your reasoning inside the answer tags, provide only the final answer. When an example is provided, you should strictly follow the format of the output/answer in that example.
 """                        
             # Run codex command in working directory
