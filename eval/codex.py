@@ -9,7 +9,7 @@ from textwrap import dedent, indent
 
 SUBPROCESS_TIMEOUT = 120
 
-logger = logging.getLogger("AsyncModelEvaluator")
+logger = logging.getLogger("CodexAgent")
 
 
 class CodexAgent:
@@ -86,9 +86,9 @@ class CodexAgent:
                 stderr=asyncio.subprocess.PIPE,
             )
             stdout, _ = await process.communicate()
-            logger.info("Conbtent of working directory:\n" + stdout.decode(errors='replace'))
+            logger.info("Content of working directory:\n" + stdout.decode(errors='replace'))
             # Return empty strings for all samples on error
-            return ""
+            raise e
 
     async def answer(self, question: str) -> str:
         """Generate code using Codex CLI."""    
