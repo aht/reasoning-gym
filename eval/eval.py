@@ -304,8 +304,8 @@ class AsyncModelEvaluator:
         Raises:
             Exception: If all retries fail
         """
-        max_retries = 3
-        base_delay = 5.0
+        max_retries = 1
+        base_delay = 10.0
         max_delay = 60.0
         backoff_factor = 2.0
 
