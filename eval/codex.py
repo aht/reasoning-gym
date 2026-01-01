@@ -108,7 +108,8 @@ class CodexAgent:
 
         instruction = f"""\
 Given a problem in `question.txt` in the current working directory "{work_dir}", your task is to answer the question by thinking step-by-step in a clear and specific manner.
-Once you have thought about the reasoning process, provide the answer in the file "answer.txt" (which should also be put in the same working directory "{work_dir}").
+Once you have thought about the reasoning process, provide the answer in the file "answer.txt" (in the same working directory "{work_dir}") and in the following format:
+<answer>answer here</answer>.
 Do not explain your reasoning inside the answer tags, provide only the final answer. When an example is provided, you should strictly follow the format of the output/answer in that example.
 """
         if self.verbose:
@@ -123,9 +124,8 @@ Do not explain your reasoning inside the answer tags, provide only the final ans
                         
         finally:
             # Clean up temporary files and directories
-            if 0:
-                try:
-                    import shutil
-                    shutil.rmtree(work_dir)
-                except OSError:
-                    pass
+            try:
+                import shutil
+                shutil.rmtree(work_dir)
+            except OSError:
+                pass
