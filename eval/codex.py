@@ -86,9 +86,9 @@ class CodexAgent:
                 stderr=asyncio.subprocess.PIPE,
             )
             stdout, _ = await process.communicate()
-            logger.error(stdout.decode(errors='replace'))
+            logger.info("Conbtent of working directory:\n" + stdout.decode(errors='replace'))
             # Return empty strings for all samples on error
-            return ""            
+            return ""
 
     async def answer(self, question: str) -> str:
         """Generate code using Codex CLI."""    
@@ -113,7 +113,7 @@ Given a problem in `question.txt` in the current working directory "{work_dir}",
 Once you have thought about the reasoning process, provide the answer in the file "answer.txt" (which should also be put in in the current working directory).
 Do not explain your reasoning inside the answer tags, provide only the final answer. When an example is provided, you should strictly follow the format of the output/answer in that example.
 """
-        if self.debug:
+        if self.verbose:
             logger.info(f"Instruction: {instruction}")
         
         try:
@@ -125,7 +125,7 @@ Do not explain your reasoning inside the answer tags, provide only the final ans
                         
         finally:
             # Clean up temporary files and directories
-            if not self.debug:
+            if 0:
                 try:
                     import shutil
                     shutil.rmtree(work_dir)
