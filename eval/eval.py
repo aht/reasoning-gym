@@ -478,7 +478,7 @@ class AsyncModelEvaluator:
             # If we have no valid completions, log a warning instead of raising an exception
             if not best_answer:
                 self.logger.warning(
-                    f"Failed to extract a valid answer from model responses for dataset '{dataset_name}', entry index {entry_index}"
+                    f"Failed to extract a valid answer from model responses for dataset '{dataset_name}', entry index {entry_index}, completion_results={completion_results}"
                 )
                 # Use None instead of empty string as the best answer
                 best_answer = None

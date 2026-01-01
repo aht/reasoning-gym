@@ -99,7 +99,9 @@ class CodexAgent:
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(question)
             if self.verbose:
-                logger.info(f"Content of question.txt:\n{question}")
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    question = f.read()
+                    logger.info(f"Content of question.txt:\n{question}")
         except Exception as e:
             logger.error(f"Error writing question to file: {e}")
             raise e
