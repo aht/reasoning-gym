@@ -31,6 +31,7 @@ import logging
 import os
 import subprocess
 import sys
+import random
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -580,6 +581,7 @@ class AsyncModelEvaluator:
 
             # Process entries with progress bar, passing the entry index and dataset name
             tasks = [self.process_entry(dataset, entry, idx, dataset_name) for idx, entry in enumerate(all_entries)]
+            random.shuffle(tasks)
             results = await tqdm_asyncio.gather(*tasks, desc=f"Processing {dataset_name}", leave=True)
 
             # Calculate metrics
@@ -642,7 +644,9 @@ class AsyncModelEvaluator:
 
         # Check if all datasets in this category are already completed
         all_completed = True
-        for dataset_config in category_config.datasets:
+        datasets = category_config.datasets.copy()
+        random.shuffle(datasets)
+        for dataset_config in datasets:
             if not self.checkpoint_manager.is_dataset_completed(category_name, dataset_config.dataset):
                 all_completed = False
                 break
@@ -680,7 +684,9 @@ class AsyncModelEvaluator:
 
         # Process each category sequentially to ensure proper checkpointing
         category_results = []
-        tasks = [asyncio.create_task(self.evaluate_category(category)) for category in self.config.categories]
+        categories = self.config.categories.copy()
+        random.shuffle(categories)
+        tasks = [asyncio.create_task(self.evaluate_category(category)) for category in categories]
 
         for finished_task in asyncio.as_completed(tasks):
             result = await finished_task
