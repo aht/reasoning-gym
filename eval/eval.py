@@ -235,7 +235,7 @@ class AsyncModelEvaluator:
 
         # Create new output directory
         timestamp = self.start_time.strftime("%Y%m%d_%H%M%S")
-        model_name = self.config.model.replace("/", "_")
+        model_name = self.agent.model_name
 
         if len(self.config.categories) == 1:
             # Include category name in the output directory when evaluating a single category
@@ -246,6 +246,7 @@ class AsyncModelEvaluator:
             output_dir = Path(self.config.output_dir) / f"{model_name}_{timestamp}"
 
         output_dir.mkdir(parents=True, exist_ok=True)
+        self.logger.info(f"Output is {output_dir}")
         return output_dir
 
     def _save_dataset_results(self, category_name: str, dataset_name: str, results: dict[str, Any]) -> None:
@@ -782,13 +783,13 @@ class AsyncModelEvaluator:
         summary_data["timestamp"] = self.start_time.isoformat()
         summary_data["git_hash"] = self.git_hash
         summary_data["model"] = self.agent.model_name
-        summary_data["provider"] = self.config.provider
-        summary_data["system_prompt"] = self.config.get_system_prompt()
-        if self.config.system_prompt_id:
-            summary_data["system_prompt_id"] = self.config.system_prompt_id
-        summary_data["max_tokens"] = self.config.max_tokens
-        summary_data["temperature"] = self.config.temperature
-        summary_data["top_p"] = self.config.top_p
+        # summary_data["provider"] = self.config.provider
+        # summary_data["system_prompt"] = self.config.get_system_prompt()
+        # if self.config.system_prompt_id:
+        #     summary_data["system_prompt_id"] = self.config.system_prompt_id
+        # summary_data["max_tokens"] = self.config.max_tokens
+        # summary_data["temperature"] = self.config.temperature
+        # summary_data["top_p"] = self.config.top_p
         summary_data["completions_per_prompt"] = self.config.completions_per_prompt
         summary_data["duration_seconds"] = results["metadata"]["duration_seconds"]
         summary_data["partial"] = False  # Mark as complete
