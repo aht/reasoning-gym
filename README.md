@@ -16,6 +16,10 @@
         </p>
 </p>
 
+## 🧠 About this fork
+
+Uses OpenAI Codex agent instead of LLM zero-shot generations. To provide a baseline of parity comparison with Harbor framework using the adapter https://github.com/aht/harbor/tree/adapter-reasoning-gym/adapters/reasoning-gym
+
 ## 🧠 About
 
 **Reasoning Gym** is a community-created Python library of procedural dataset generators and algorithmically verifiable reasoning environments for training reasoning models with reinforcement learning (RL). The goal is to generate virtually infinite training data with adjustable complexity.
